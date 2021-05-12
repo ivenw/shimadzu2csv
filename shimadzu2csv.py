@@ -10,15 +10,16 @@ def shimadzu_to_df (txt_file_path: str, flow_rate=1.0, out_type='fl') :
     sample_num = int(txt_file_path.rpartition('/')[2].replace('.txt', ''))
     sample_name = f'{sample_num:02}'
 
+    # create str vars to search against the file
     uv_name = '[LC Chromatogram(Detector A-Ch1)]'
     fl_name = '[LC Chromatogram(Detector B-Ch1)]'
     points_name = '# of Points'
     start_name = 'R.Time (min)	Intensity'
 
+    # find the line_num of uv and fl start and end
     with open(txt_file_path, 'r') as f:
         uv_yes = False
         fl_yes = False
-        # find the line_num of uv and fl start and end
         for line_num, line in enumerate(f) :
             if uv_name in line :
                 uv_yes = True
@@ -54,42 +55,50 @@ def shimadzu_to_df (txt_file_path: str, flow_rate=1.0, out_type='fl') :
 def shimadzu_to_csv_batch(dir: str, flow_rate: float, out_type: str) :
     '''Applies shimadzu_to_df on all Shimadzu .txt files in a directory.'''
 
+    # get list of files in dir
     dir_list = os.listdir(dir)
 
+    # run shimadzu_to_df on every valid file in the directory
     out_df_list = []
     for file in dir_list :
         if '.txt' in file :
             out_df_list.append(shimadzu_to_df(f'{dir}/{file}', flow_rate, out_type))
 
+    # create dataframe from all data frames and sort by label
     out_df = pd.concat(out_df_list, axis=1)
     out_df = out_df.sort_index(axis=1)
 
     out_df.to_csv(f'{dir}/processed.csv')
-    return f'{dir}/processed.csv'
+    # return f'{dir}/processed.csv'
 
 if __name__ == '__main__' :
 
-    dir = ''
-
+    # ask user for input of directory. Do basic formating of string to allow for mac drag and drop
     dir = input('\nPlease enter directory name:\n').replace('\\', '').rstrip()
 
+    # ask user again if first input was not valid. Repeat until valid.
     while os.path.isdir(dir) == False :
         dir = input('Input not a directory. Try again: ').replace('\\', '').rstrip()
 
+    # tell user how many files the script is gonna touch
     num_of_files = len(os.listdir(dir))
     print(f'\n{num_of_files} files found in this directory.')
 
+    # ask user for flow rate. default to 1.0
     try :
         flow_rate = float(input('\nPlease enter the flow rate as ml/min (defaults to 1.0 if left empty):\n'))
     except ValueError :
         flow_rate = 1.0
 
+    # ask user for measuring type. default to fluorescence
     out_type = input('\nWhich traces do you want? UV (\'uv\') or fluorescence (\'fl\')?\n(Defaults to \'fl\' if left empty)\n')
     if out_type.strip() == '' :
         out_type = 'fl'
 
+    # run batch function
     shimadzu_to_csv_batch(dir, flow_rate, out_type)
 
+    # tell user where the results have been saved
     print(f'\nSuccess! {num_of_files} files have been processed. The results are found in:\n{dir}/processed.csv\n')
 
     # if open == True :
