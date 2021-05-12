@@ -1,5 +1,5 @@
 # shimadzu2csv
-Batch script for turning ASCII files exported from LabSolutions for Shimadzu FSEC HPLCs to a csv file.
+Batch script for turning ASCII files, exported from LabSolutions for Shimadzu FSEC HPLCs, to a csv file.
 
 Executs with interactive prompts in the command line. Written in Python 3.8.5. (Should work with Python 3.6+).
 
